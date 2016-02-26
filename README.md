@@ -12,18 +12,18 @@ This allows to avoid process start overhead.
 ## Example
 
 ```javascript
-
 var MyStem = require('mystem3');
 
-var myStem = new MyStem();
-myStem.start(); // Run mystem in separate process
+var mystem = new MyStem();
+mystem.start(); // Run mystem in separate process
 
-myStem.lemmatize("немцы").then(function(lemma) {
-    console.log(lemma);
-}).then(function() {
-    myStem.stop(); // Or you can write process.exit();
-}).catch(console.error);
+var sentence = 'Морфологический анализатор для русского языка';
 
+mystem.analyze(sentence)
+.then(res => {
+    mystem.stop();
+    console.log(res.join(',').split(','));
+});
 ```
 
 ## Methods
@@ -43,9 +43,9 @@ Starts mystem as separate process and establishes commucation with it. This give
 Stops mystem process. Will be automatically stopped on process.exit();
 
 
-### myStem.lemmatize(word)
+### myStem.analyze(word)
 
-Returns promise with lemmatized version for passed word
+Returns promise with analyzed version for passed word/words
 
 ## AUTHOR
 koorchik (Viktor Turskyi)
