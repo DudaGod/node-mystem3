@@ -8,6 +8,7 @@ var mkdirp  = require('mkdirp');
 var request = require('request');
 var unzip   = require('unzip');
 var Promise = require('bluebird');
+var targz = require('tar.gz');
 
 var TARBALL_URLS = {
     'linux': {
@@ -36,7 +37,11 @@ new Promise((resolve, reject) => {
         });
     })
     .then(() => downloadFile(url, tmpFile))
-    .then(() => fs.createReadStream(tmpFile).pipe(unzip.Extract({path: targetDir})))
+    .then(() => {
+        return process.platform === 'win32' ? fs.createReadStream(tmpFile).pipe(unzip.Extract({path: targetDir})) :
+            new targz().extract(tmpFile, targetDir);
+    })
+    .then(() => console.log('mystem extracted successful'))
     .catch(err => {
         console.log(err);
     });
@@ -44,15 +49,14 @@ new Promise((resolve, reject) => {
 function downloadFile(url, dest) {
     return new Promise((resolve, reject) => {
         console.log('Downloading %s', url);
-        var file = fs.createWriteStream(dest);
-        request.get(url)
-            .pipe(file)
+        request(url)
+            .pipe(fs.createWriteStream(dest))
             .on('error', err => {
                 fs.unlink(dest);
                 reject(err);
             })
             .on('finish', () => {
-                file.close(resolve());
+                resolve();
             });
     });
 }
